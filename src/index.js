@@ -6,24 +6,8 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 
 // ── CORS ──────────────────────────────────────────────────────
-const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
-    'http://localhost:5173',
-    'http://localhost:4173',
-    'https://ilmiyxizmat.uz',
-    'https://www.ilmiyxizmat.uz',
-];
-
 const corsOptions = {
-    origin: (origin, callback) => {
-        // curl / Postman / server-side so'rovlar (origin yo'q) → ruxsat
-        if (!origin) return callback(null, true);
-        // Vercel preview URLlar: *.vercel.app
-        if (origin.endsWith('.vercel.app')) return callback(null, true);
-        if (allowedOrigins.includes(origin)) return callback(null, true);
-        console.warn('CORS blocked:', origin);
-        callback(new Error(`CORS: ${origin} ruxsatsiz`));
-    },
+    origin: true,   // barcha originlarga ruxsat (keyinchalik cheklash mumkin)
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
