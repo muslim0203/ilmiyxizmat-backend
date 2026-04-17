@@ -8,19 +8,30 @@ const app = express();
 // ── CORS ──────────────────────────────────────────────────────
 const allowedOrigins = [
     process.env.FRONTEND_URL || 'http://localhost:5173',
+    'http://localhost:5173',
+    'http://localhost:4173',
     'https://ilmiyxizmat.uz',
     'https://www.ilmiyxizmat.uz',
 ];
 
-app.use(cors({
+const corsOptions = {
     origin: (origin, callback) => {
-        // curl / Postman kabi so'rovlar (origin yo'q) → ruxsat
+        // curl / Postman / server-side so'rovlar (origin yo'q) → ruxsat
         if (!origin) return callback(null, true);
+        // Vercel preview URLlar: *.vercel.app
+        if (origin.endsWith('.vercel.app')) return callback(null, true);
         if (allowedOrigins.includes(origin)) return callback(null, true);
+        console.warn('CORS blocked:', origin);
         callback(new Error(`CORS: ${origin} ruxsatsiz`));
     },
     credentials: true,
-}));
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+// OPTIONS preflight barcha route lar uchun
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
 
 // ── Body parser ───────────────────────────────────────────────
 app.use(express.json({ limit: '1mb' }));
