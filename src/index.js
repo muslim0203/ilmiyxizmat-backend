@@ -59,9 +59,33 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Serverda kutilmagan xatolik yuz berdi.' });
 });
 
+// ── Ma'lumotlar bazasi sxemasini tayyorlash ───────────────────
+// Ilgari buni qo'lda `node src/db/init.js` orqali bajarish kerak edi. Agar
+// unutilsa (yoki Postgres volume yangi bo'lsa) jadvallar yaratilmay qolib,
+// barcha API endpointlar 500 qaytarardi. Sxema CREATE TABLE IF NOT EXISTS
+// asosida qurilgani uchun uni har ishga tushishda bajarish xavfsiz.
+async function ensureSchema() {
+    const fs   = require('fs');
+    const path = require('path');
+    const pool = require('./db');
+
+    const sql = fs.readFileSync(path.join(__dirname, 'db', 'schema.sql'), 'utf8');
+    await pool.query(sql);
+}
+
 // ── Server ishga tushirish ────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server ishlamoqda: http://localhost:${PORT}`);
-    console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+
+ensureSchema()
+    .then(() => console.log('✅ Sxema tayyor (jadvallar mavjud).'))
+    .catch(err => {
+        // Bazaga ulanib bo'lmasa ham serverni to'xtatmaymiz: /health ishlab
+        // tursin va xatoning aniq sababi loglarda ko'rinsin.
+        console.error('❌ Sxema tayyorlanmadi. Baza ulanishini tekshiring:', err.message);
+    })
+    .finally(() => {
+        app.listen(PORT, () => {
+            console.log(`🚀 Server ishlamoqda: http://localhost:${PORT}`);
+            console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+        });
+    });

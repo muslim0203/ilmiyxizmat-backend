@@ -17,7 +17,7 @@ Variables bo'limiga quyidagilarni qo'shing:
 ```
 JWT_SECRET=<kamida 32 ta tasodifiy belgi, masalan: openssl rand -hex 32>
 ADMIN_PASSWORD_HASH=<bcrypt hash — pastdagi usul bilan yarating>
-FRONTEND_URL=https://ilmiyxizmat.uz
+FRONTEND_URL=https://www.ilmiyxizmat.uz
 GEMINI_API_KEY=<Google AI Studio dan olingan kalit>
 ```
 
@@ -28,10 +28,20 @@ node src/scripts/generate-hash.js
 ```
 
 ## 5. Ma'lumotlar bazasini ishga tushirish
-Railway "Run command" yoki local terminal:
+**Qo'lda bajarish shart emas** — server har ishga tushganda `schema.sql` ni
+avtomatik bajaradi (`CREATE TABLE IF NOT EXISTS` bo'lgani uchun takroriy
+ishlatish xavfsiz). Ilgari bu qadam unutilsa, barcha API endpointlar 500
+qaytarardi.
+
+Xohlasangiz qo'lda ham ishga tushirish mumkin:
 ```bash
 DATABASE_URL="postgresql://..." node src/db/init.js
 ```
+
+### SSL haqida
+`DATABASE_URL` ichki tarmoq manzili bo'lsa (`postgres.railway.internal`) SSL
+o'chiriladi, ommaviy proxy manzili bo'lsa (`*.proxy.rlwy.net`) yoqiladi.
+Kerak bo'lsa `PGSSLMODE=disable` yoki `PGSSLMODE=require` bilan bekor qilinadi.
 
 ## 6. Deploy
 Railway avtomatik deploy qiladi. 
